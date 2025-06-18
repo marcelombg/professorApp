@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "9V64AdTbABHPNzNmawL5QSh79AOOWYsAkwxBpO3ignk=",
+  "Source": "ProfessorApp.Api",
+  "BasePath": "_content/ProfessorApp.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
