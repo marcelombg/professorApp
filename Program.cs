@@ -69,4 +69,3 @@ using (var scope = app.Services.CreateScope())
 }
 
 await app.RunAsync("http://0.0.0.0:5000");
-
