@@ -11,7 +11,7 @@ namespace ProfessorApp.Api.Models
         public int AlunoId { get; set; }
         
         [Required]
-        public DateTime DataRegistro { get; set; } = DateTime.Now;
+        public DateTime DataRegistro { get; set; } = DateTime.UtcNow;
         
         [Required]
         public string Descricao { get; set; } = string.Empty;
