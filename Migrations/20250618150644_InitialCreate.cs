@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,11 +16,11 @@ namespace ProfessorApp.Api.Migrations
                 name: "Alunos",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nome = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    DataNascimento = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Ativo = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    DataNascimento = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Ativo = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -30,9 +31,9 @@ namespace ProfessorApp.Api.Migrations
                 name: "Topicos",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nome = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -43,11 +44,11 @@ namespace ProfessorApp.Api.Migrations
                 name: "Aprendizados",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    AlunoId = table.Column<int>(type: "INTEGER", nullable: false),
-                    DataRegistro = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "datetime('now')"),
-                    Descricao = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AlunoId = table.Column<int>(type: "integer", nullable: false),
+                    DataRegistro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    Descricao = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,8 +65,8 @@ namespace ProfessorApp.Api.Migrations
                 name: "AprendizadoTopicos",
                 columns: table => new
                 {
-                    AprendizadosId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TopicosId = table.Column<int>(type: "INTEGER", nullable: false)
+                    AprendizadosId = table.Column<int>(type: "integer", nullable: false),
+                    TopicosId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -3,13 +3,17 @@ using ProfessorApp.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Adiciona suporte para variáveis de ambiente sobrescreverem configurações
+builder.Configuration.AddEnvironmentVariables();
+
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Configurar Entity Framework com SQLite
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? 
-                     "Data Source=professorapp.db"));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection") ??
+        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.")
+    ));
 
 // Configurar CORS
 builder.Services.AddCors(options =>

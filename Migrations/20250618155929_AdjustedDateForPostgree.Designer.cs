@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProfessorApp.Api.Data;
@@ -11,9 +12,11 @@ using ProfessorApp.Api.Data;
 namespace ProfessorApp.Api.Migrations
 {
     [DbContext(typeof(ProfessorAppContext))]
-    partial class ProfessorAppContextModelSnapshot : ModelSnapshot
+    [Migration("20250618155929_AdjustedDateForPostgree")]
+    partial class AdjustedDateForPostgree
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

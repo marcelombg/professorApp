@@ -38,7 +38,7 @@ namespace ProfessorApp.Api.Data
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Descricao).IsRequired();
-                entity.Property(e => e.DataRegistro).HasDefaultValueSql("datetime('now')");
+                entity.Property(e => e.DataRegistro).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 
                 // Relacionamento com Aluno (1:N)
                 entity.HasOne(e => e.Aluno)
