@@ -91,7 +91,7 @@ namespace ProfessorApp.Api.Controllers
             {
                 AlunoId = aprendizadoDto.AlunoId,
                 Descricao = aprendizadoDto.Descricao,
-                DataRegistro = DateTime.Now
+                DataRegistro = DateTime.UtcNow
             };
 
             // Adicionar tópicos se especificados
@@ -248,7 +248,7 @@ namespace ProfessorApp.Api.Controllers
 
             return File(fileBytes, 
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"aprendizados_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+                $"aprendizados_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx");
         }
 
         private bool AprendizadoExists(int id)
