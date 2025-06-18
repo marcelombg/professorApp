@@ -48,12 +48,19 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Criar o banco de dados se não existir
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<ProfessorAppContext>();
-    context.Database.EnsureCreated();
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ProfessorAppContext>();
+        context.Database.EnsureCreated();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro ao criar o banco de dados: {ex.Message}");
+        throw;
+    }
 }
 
-app.Run("http://0.0.0.0:5000");
+await app.RunAsync("http://0.0.0.0:5000");
 
