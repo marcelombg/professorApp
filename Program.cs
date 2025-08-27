@@ -1,3 +1,4 @@
+using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using ProfessorApp.Api.Data;
 
@@ -9,17 +10,29 @@ builder.Configuration.AddEnvironmentVariables();
 // Add services to the container.
 builder.Services.AddControllers();
 
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+// 🔹 Configuração da conexão com o banco (Railway ou local)
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connectionString;
 
-if (string.IsNullOrEmpty(connectionString))
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    // Converte o formato postgres://usuario:senha@host:porta/db -> formato aceito pelo Npgsql
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
+
+    connectionString =
+        $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
+        $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
+}
+else
 {
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 }
 
+// 🔹 Registrar o DbContext com a connection string correta
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
-
 
 // Configurar CORS
 builder.Services.AddCors(options =>
@@ -54,6 +67,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// 🔹 Garantir que o banco existe ao iniciar
 using (var scope = app.Services.CreateScope())
 {
     try
