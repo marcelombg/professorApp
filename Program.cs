@@ -3,9 +3,7 @@ using ProfessorApp.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -------------------------
-// Configura DATABASE_URL
-// -------------------------
+// Lê a variável de ambiente do Railway
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (string.IsNullOrEmpty(databaseUrl))
 {
@@ -14,9 +12,10 @@ if (string.IsNullOrEmpty(databaseUrl))
 
 // Converte URI do Railway para Npgsql
 string connectionString;
-if (databaseUrl.StartsWith("postgres://"))
+if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
 {
-    var uri = new Uri(databaseUrl);
+    // Substitui postgresql:// por postgres:// para Uri interpretar
+    var uri = new Uri(databaseUrl.Replace("postgresql://", "postgres://"));
     var userInfo = uri.UserInfo.Split(':');
     connectionString =
         $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
@@ -27,46 +26,27 @@ else
     connectionString = databaseUrl;
 }
 
-// -------------------------
-// Configura DbContext
-// -------------------------
+Console.WriteLine($"DATABASE_URL={databaseUrl}");
+
+// Configura o DbContext
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
 
-// -------------------------
-// Configura CORS
-// -------------------------
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
-// -------------------------
-// Adiciona controllers e swagger
-// -------------------------
+// Configura serviços do MVC / Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// -------------------------
-// Aplica migrações automaticamente
-// -------------------------
+// Aplica migrations automaticamente
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ProfessorAppContext>();
     db.Database.Migrate();
 }
 
-// -------------------------
-// Configura middleware
-// -------------------------
+// Configura pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -75,13 +55,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.UseCors();
 app.MapControllers();
-
-// -------------------------
-// Configura porta dinâmica do Railway
-// -------------------------
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
 
 app.Run();
