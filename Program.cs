@@ -50,6 +50,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+Console.WriteLine($"DATABASE_URL={Environment.GetEnvironmentVariable("DATABASE_URL")}");
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
