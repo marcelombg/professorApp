@@ -1,29 +1,36 @@
 using Microsoft.EntityFrameworkCore;
-using ProfessorApp.Api.Data; // ajuste para o namespace do seu DbContext
+using ProfessorApp.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Obtém a URL do banco do ambiente
+// Lê a variável de ambiente do Railway
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (string.IsNullOrEmpty(databaseUrl))
 {
     throw new Exception("DATABASE_URL não encontrada no ambiente!");
 }
 
-// Corrige o URI para o .NET entender
-var fixedUrl = databaseUrl.Replace("postgres://", "http://").Replace("postgresql://", "http://");
-var uri = new Uri(fixedUrl);
-var userInfo = uri.UserInfo.Split(':');
-
-// String de conexão Npgsql
-var connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
-                       $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
+// Converte URI do Railway para Npgsql
+string connectionString;
+if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
+{
+    // Substitui postgresql:// por postgres:// para Uri interpretar
+    var uri = new Uri(databaseUrl.Replace("postgresql://", "postgres://"));
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString =
+        $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
+        $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
+}
+else
+{
+    connectionString = databaseUrl;
+}
 
 // Configura o DbContext
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Adiciona serviços de controller
+// Configura serviços do MVC / Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
