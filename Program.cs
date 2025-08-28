@@ -26,6 +26,8 @@ else
     connectionString = databaseUrl;
 }
 
+Console.WriteLine($"DATABASE_URL={databaseUrl}");
+
 // Configura o DbContext
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));

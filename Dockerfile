@@ -1,21 +1,30 @@
-# Etapa de build
+# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copia arquivos do csproj e restaura dependências
-COPY *.csproj ./
+# Copia csproj e restaura dependências
+COPY *.sln .
+COPY ProfessorApp.Api/*.csproj ./ProfessorApp.Api/
 RUN dotnet restore
 
-# Copia todo o restante do código e publica
-COPY . ./
-RUN dotnet publish -c Release -o /app/out
+# Copia todo o código
+COPY . .
 
-# Etapa de runtime
+# Build do projeto
+RUN dotnet publish -c Release -o /app/publish
+
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/out ./
+COPY --from=build /app/publish .
 
-# Exposição e execução
+# Variável de ambiente DATABASE_URL será definida no Railway
+# Exemplo no Railway: postgresql://user:password@host:port/dbname
+
+# Porta que o ASP.NET irá ouvir
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV DOTNET_URLS=http://+:5000
 EXPOSE 5000
-ENV ASPNETCORE_URLS=http://+:5000
+
+# Comando para rodar a aplicação
 ENTRYPOINT ["dotnet", "ProfessorApp.Api.dll"]
