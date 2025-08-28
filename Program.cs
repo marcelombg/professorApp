@@ -1,41 +1,35 @@
 using Microsoft.EntityFrameworkCore;
-using ProfessorApp.Api.Data;
+using ProfessorApp.Api.Data; // ajuste para o namespace do seu DbContext
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Pega a variável de ambiente do Railway
+// Obtém a URL do banco do ambiente
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (string.IsNullOrEmpty(databaseUrl))
 {
     throw new Exception("DATABASE_URL não encontrada no ambiente!");
 }
 
-string connectionString;
+// Converte URI do Railway para string de conexão Npgsql
+var tempUrl = databaseUrl.Replace("postgres://", "http://").Replace("postgresql://", "http://");
+var uri = new Uri(tempUrl);
+var userInfo = uri.UserInfo.Split(':');
 
-if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
-{
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-
-    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
+var connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
                        $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
-}
-else
-{
-    connectionString = databaseUrl;
-}
 
+// Configura o DbContext
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Adiciona serviços do ASP.NET
+// Configura serviços do ASP.NET
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Aplica migrations automaticamente ao iniciar
+// Aplica migrations automaticamente no startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ProfessorAppContext>();
@@ -48,8 +42,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-Console.WriteLine("DEBUG_DATABASE_URL=" + Environment.GetEnvironmentVariable("DATABASE_URL"));
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
