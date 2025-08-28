@@ -53,7 +53,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-Console.WriteLine($"DATABASE_URL={Environment.GetEnvironmentVariable("DATABASE_URL")}");
+Console.WriteLine("DEBUG_DATABASE_URL=" + Environment.GetEnvironmentVariable("DATABASE_URL"));
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
