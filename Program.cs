@@ -10,6 +10,9 @@ if (string.IsNullOrEmpty(databaseUrl))
     throw new Exception("DATABASE_URL não encontrada no ambiente!");
 }
 
+// Normaliza o esquema (caso venha como "postgresql://")
+databaseUrl = databaseUrl.Replace("postgresql://", "postgres://");
+
 // Converte URI do Railway para Npgsql
 string connectionString;
 if (databaseUrl.StartsWith("postgres://"))
