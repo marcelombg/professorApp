@@ -1,28 +1,21 @@
-# Stage 1: Build
+# Etapa de build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copia a solução e os projetos
-COPY *.sln ./
-COPY ProfessorApp.Api/*.csproj ./ProfessorApp.Api/
-
-# Restaura dependências
+# Copia arquivos do csproj e restaura dependências
+COPY *.csproj ./
 RUN dotnet restore
 
-# Copia todo o código
-COPY . .
+# Copia todo o restante do código e publica
+COPY . ./
+RUN dotnet publish -c Release -o /app/out
 
-# Build do projeto
-RUN dotnet publish -c Release -o /app/publish
-
-# Stage 2: Runtime
+# Etapa de runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=build /app/out ./
 
-# Porta que o ASP.NET irá ouvir
-ENV DOTNET_RUNNING_IN_CONTAINER=true
-ENV DOTNET_URLS=http://+:5000
+# Exposição e execução
 EXPOSE 5000
-
+ENV ASPNETCORE_URLS=http://+:5000
 ENTRYPOINT ["dotnet", "ProfessorApp.Api.dll"]
