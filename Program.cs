@@ -3,16 +3,16 @@ using ProfessorApp.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Lê a connection string do Railway
+// Pega a connection string do Railway
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
 
 if (!string.IsNullOrEmpty(databaseUrl) && databaseUrl.StartsWith("postgres://"))
 {
-    // Converte URI do Railway para formato Npgsql
+    // Converte URI do Railway para o formato Npgsql
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
-    connectionString =
+    connectionString = 
         $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
         $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
 }
@@ -26,27 +26,20 @@ else
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Adiciona controllers e endpoints
+// Adiciona serviços de controllers
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Middleware
-if (app.Environment.IsDevelopment())
+// Aplica migrations automaticamente
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var db = scope.ServiceProvider.GetRequiredService<ProfessorAppContext>();
+    db.Database.Migrate();
 }
 
-app.UseHttpsRedirection();
-app.UseAuthorization();
-
+// Configura roteamento
 app.MapControllers();
 
-// Porta 8080 exigida pelo Railway
-app.Urls.Clear();
-app.Urls.Add("http://+:8080");
-
+// Executa a aplicação
 app.Run();
