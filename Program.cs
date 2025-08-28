@@ -10,25 +10,21 @@ if (string.IsNullOrEmpty(databaseUrl))
     throw new Exception("DATABASE_URL não encontrada no ambiente!");
 }
 
-// Normaliza o esquema (caso venha como "postgresql://")
-databaseUrl = databaseUrl.Replace("postgresql://", "postgres://");
-
-// Converte URI do Railway para Npgsql
 string connectionString;
-if (databaseUrl.StartsWith("postgres://"))
+
+if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
 {
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
-    connectionString =
-        $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
-        $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
+
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
+                       $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
 }
 else
 {
     connectionString = databaseUrl;
 }
 
-// Configura o DbContext
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
 
