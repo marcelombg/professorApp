@@ -4,10 +4,10 @@ using ProfessorApp.Api.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Lê a variável de ambiente do Railway
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_PUBLIC_URL");
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE");
 if (string.IsNullOrEmpty(databaseUrl))
 {
-    throw new Exception("DATABASE_PUBLIC_URL não encontrada no ambiente!");
+    throw new Exception("DATABASE não encontrada no ambiente!");
 }
 
 // Converte URI do Railway para Npgsql
@@ -26,7 +26,7 @@ else
     connectionString = databaseUrl;
 }
 
-Console.WriteLine($"DATABASE_PUBLIC_URL={databaseUrl}");
+Console.WriteLine($"DATABASE={databaseUrl}");
 
 // Configura o DbContext
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
