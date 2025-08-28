@@ -10,11 +10,12 @@ if (string.IsNullOrEmpty(databaseUrl))
     throw new Exception("DATABASE_URL não encontrada no ambiente!");
 }
 
-// Converte URI do Railway para string de conexão Npgsql
-var tempUrl = databaseUrl.Replace("postgres://", "http://").Replace("postgresql://", "http://");
-var uri = new Uri(tempUrl);
+// Corrige o URI para o .NET entender
+var fixedUrl = databaseUrl.Replace("postgres://", "http://").Replace("postgresql://", "http://");
+var uri = new Uri(fixedUrl);
 var userInfo = uri.UserInfo.Split(':');
 
+// String de conexão Npgsql
 var connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
                        $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
 
@@ -22,14 +23,14 @@ var connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsoluteP
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Configura serviços do ASP.NET
+// Adiciona serviços de controller
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Aplica migrations automaticamente no startup
+// Aplica migrations automaticamente
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ProfessorAppContext>();
