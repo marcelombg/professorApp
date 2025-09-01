@@ -12,15 +12,28 @@ if (string.IsNullOrEmpty(databaseUrl))
     throw new Exception("DATABASE_URL não encontrada no ambiente!");
 }
 
-// Converte URI do Railway para Npgsql
 string connectionString;
-if (databaseUrl.StartsWith("postgres://"))
+
+// Se for URL estilo postgres://
+if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
 {
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
     connectionString =
         $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
         $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true;";
+}
+// Se for só o host interno (postgres.railway.internal)
+else if (databaseUrl.Contains("railway.internal"))
+{
+    var user = Environment.GetEnvironmentVariable("PGUSER") ?? "postgres";
+    var password = Environment.GetEnvironmentVariable("PGPASSWORD") ?? "";
+    var dbName = Environment.GetEnvironmentVariable("PGDATABASE") ?? "railway";
+    var port = Environment.GetEnvironmentVariable("PGPORT") ?? "5432";
+
+    connectionString =
+        $"Host={databaseUrl};Port={port};Database={dbName};" +
+        $"Username={user};Password={password};Ssl Mode=Require;Trust Server Certificate=true;";
 }
 else
 {
@@ -33,9 +46,7 @@ else
 builder.Services.AddDbContext<ProfessorAppContext>(options =>
     options.UseNpgsql(connectionString));
 
-// -------------------------
-// Configura CORS
-// -------------------------
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -46,27 +57,19 @@ builder.Services.AddCors(options =>
     });
 });
 
-// -------------------------
-// Adiciona controllers e swagger
-// -------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// -------------------------
-// Aplica migrações automaticamente
-// -------------------------
+// Aplica migrações
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ProfessorAppContext>();
     db.Database.Migrate();
 }
 
-// -------------------------
-// Configura middleware
-// -------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -78,10 +81,7 @@ app.UseAuthorization();
 app.UseCors();
 app.MapControllers();
 
-// -------------------------
-// Configura porta dinâmica do Railway
-// -------------------------
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
+var portEnv = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://0.0.0.0:{portEnv}");
 
 app.Run();
